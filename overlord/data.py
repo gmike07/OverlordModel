@@ -470,7 +470,7 @@ class Market1501(DataSet):
 		return img_paths, class_ids
 
 	def read(self):
-		img_paths, class_ids, content_ids = self.__list_imgs()
+		img_paths, class_ids = self.__list_imgs()
 		unique_class_ids = list(set(class_ids))
 
 		imgs = np.empty(shape=(len(img_paths), 128, 64, 3), dtype=np.uint8)
