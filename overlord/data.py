@@ -469,7 +469,7 @@ class Market1501(DataSet):
 
 		return img_paths, class_ids
 
-	def read_images(self):
+	def read(self):
 		img_paths, class_ids, content_ids = self.__list_imgs()
 		unique_class_ids = list(set(class_ids))
 
