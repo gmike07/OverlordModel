@@ -2,7 +2,7 @@ import os
 import itertools
 import pickle
 from tqdm import tqdm
-
+import cv2
 import numpy as np
 
 from sklearn.linear_model import LogisticRegression
@@ -186,9 +186,9 @@ class Model:
 
 			samples_fixed = self.generate_samples(dataset, randomized=False)
 			samples_random = self.generate_samples(dataset, randomized=True)
-
-			summary.add_image(tag='samples-fixed', img_tensor=samples_fixed, global_step=epoch)
-			summary.add_image(tag='samples-random', img_tensor=samples_random, global_step=epoch)
+			
+			summary.add_image(tag='samples-fixed', img_tensor=cv2.resize(samples_fixed, (128, 64)), global_step=epoch)
+			summary.add_image(tag='samples-random', img_tensor=cv2.resize(samples_random, (128, 64)), global_step=epoch)
 
 			if epoch % 10 == 0:
 				content_codes = self.encode_content(dataset)
