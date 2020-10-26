@@ -636,14 +636,15 @@ class Model:
 		samples = {name: tensor.to(self.device) for name, tensor in samples.items()}
 
 		blank = torch.ones_like(samples['img'][0])
-		summary = [torch.cat([blank] + list(samples['img']), dim=2)]
+		f_reshape = lambda x: cv2.resize(x.reshape((128, 128, 3)), (128, 64)).reshape((3, 128, 64))
+		summary = [torch.cat([blank] + list(f_reshape(x) for img in samples['img']), dim=2)]
 		for i in range(n_samples):
 			converted_imgs = [samples['img'][i]]
 
 			for j in range(n_samples):
 				generator = self.amortized_model.generator if amortized else self.latent_model.generator
 				converted_img = generator(samples['content_code'][[j]], samples['class_code'][[i]], samples['style_code'][[i]])
-				converted_imgs.append(cv2.resize(converted_img[0], (128, 64)))
+				converted_imgs.append(cv2.resize(f_reshape(converted_img[0])).reshape((3, 128, 64)))
 
 			summary.append(torch.cat(converted_imgs, dim=2))
 
