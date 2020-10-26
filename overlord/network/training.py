@@ -191,8 +191,8 @@ class Model:
 			samples_fixed = self.generate_samples(dataset, randomized=False)
 			samples_random = self.generate_samples(dataset, randomized=True)
 			
-			summary.add_image(tag='samples-fixed', img_tensor=cv2.resize(samples_fixed, (128, 64)), global_step=epoch)
-			summary.add_image(tag='samples-random', img_tensor=cv2.resize(samples_random, (128, 64)), global_step=epoch)
+			summary.add_image(tag='samples-fixed', img_tensor=samples_fixed, global_step=epoch)
+			summary.add_image(tag='samples-random', img_tensor=samples_random, global_step=epoch)
 
 			if epoch % 10 == 0:
 				content_codes = self.encode_content(dataset)
@@ -641,7 +641,7 @@ class Model:
 			for j in range(n_samples):
 				generator = self.amortized_model.generator if amortized else self.latent_model.generator
 				converted_img = generator(samples['content_code'][[j]], samples['class_code'][[i]], samples['style_code'][[i]])
-				converted_imgs.append(converted_img[0])
+				converted_imgs.append(cv2.resize(converted_img[0], (128, 64)))
 
 			summary.append(torch.cat(converted_imgs, dim=2))
 
