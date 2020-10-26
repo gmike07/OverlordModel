@@ -637,7 +637,7 @@ class Model:
 
 		blank = torch.ones_like(samples['img'][0])
 		f_reshape = lambda x: cv2.resize(x.reshape((128, 128, 3)), (128, 64)).reshape((3, 128, 64))
-		summary = [torch.cat([blank] + list(f_reshape(x) for img in samples['img']), dim=2)]
+		summary = [torch.cat([blank] + list(f_reshape(img) for img in samples['img']), dim=2)]
 		for i in range(n_samples):
 			converted_imgs = [samples['img'][i]]
 
