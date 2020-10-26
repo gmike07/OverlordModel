@@ -635,7 +635,7 @@ class Model:
 
 		samples = {name: tensor.to(self.device) for name, tensor in samples.items()}
 
-		f_reshape = lambda x: torch.from_numpy(cv2.resize(x.reshape((64, 64, 3)).cpu().numpy(), (128, 64)).reshape((3, 128, 64))).to(self.device)
+		f_reshape = lambda x: torch.from_numpy(cv2.resize(x.reshape((128, 128, 3)).cpu().numpy(), (128, 64)).reshape((3, 128, 64))).to(self.device)
 		blank = torch.ones_like(f_reshape(samples['img'][0]))
 		summary = [torch.cat([blank] + list(f_reshape(img) for img in samples['img']), dim=2)]
 		for i in range(n_samples):
