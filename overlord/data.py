@@ -473,7 +473,7 @@ class Market1501(DataSet):
 		img_paths, class_ids = self.__list_imgs()
 		unique_class_ids = list(set(class_ids))
 
-		imgs = np.empty(shape=(len(img_paths), 128, 64, 3), dtype=np.uint8)
+		imgs = np.empty(shape=(len(img_paths), 128, 128, 3), dtype=np.uint8)
 		classes = np.empty(shape=(len(img_paths),), dtype=np.uint32)
 
 		for i in tqdm(range(len(img_paths))):
