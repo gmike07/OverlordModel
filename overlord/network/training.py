@@ -155,6 +155,9 @@ class Model:
 		self.vgg_features.to(self.device)
 
 		summary = SummaryWriter(log_dir=tensorboard_dir)
+		if os.path.exists(checkpoint_dir) and os.path.exists(os.path.join(checkpoint_dir, 'objs.pkl')):
+			objs = pickle.load(os.path.join(checkpoint_dir, 'objs.pkl'), 'rb')
+			epochs, optimizer, scheduler = objs['epochs'], objs['optimizer'], objs['scheduler']
 		for epoch in range(self.config['train']['n_epochs']):
 			self.latent_model.train()
 
@@ -195,7 +198,10 @@ class Model:
 				score_train, score_test = self.classification_score(X=content_codes, y=classes)
 				summary.add_scalar(tag='class_from_content/train', scalar_value=score_train, global_step=epoch)
 				summary.add_scalar(tag='class_from_content/test', scalar_value=score_test, global_step=epoch)
-
+				if os.path.exists(checkpoint_dir):
+					objs = {'epochs': epoch, 'optimizer': optimizer, 'scheduler': scheduler}
+					with open(os.path.join(checkpoint_dir, 'objs.pkl'), 'wb') as f:
+						pickle.dump(objs, f)
 			self.save(model_dir)
 
 		summary.close()
