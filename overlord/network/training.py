@@ -161,7 +161,7 @@ class Model:
 			epochs, optimizer, scheduler = objs['epochs'], objs['optimizer'], objs['scheduler']
 			model.latent_model = LatentModel(config)
 			model.latent_model.load_state_dict(torch.load(os.path.join(model_dir, 'latent.pth')))
-		for epoch in range(self.config['train']['n_epochs']):
+		for epoch in range(epochs):
 			self.latent_model.train()
 
 			pbar = tqdm(iterable=data_loader)
@@ -202,7 +202,7 @@ class Model:
 				summary.add_scalar(tag='class_from_content/train', scalar_value=score_train, global_step=epoch)
 				summary.add_scalar(tag='class_from_content/test', scalar_value=score_test, global_step=epoch)
 				if os.path.exists(model_dir):
-					objs = {'epochs': epoch, 'optimizer': optimizer, 'scheduler': scheduler}
+					objs = {'epochs': epochs - epoch, 'optimizer': optimizer, 'scheduler': scheduler}
 					with open(os.path.join(model_dir, 'objs.pkl'), 'wb') as f:
 						pickle.dump(objs, f)
 			self.save(model_dir)
