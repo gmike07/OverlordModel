@@ -478,7 +478,7 @@ class Market1501(DataSet):
 
 		for i in tqdm(range(len(img_paths))):
 			img = imageio.imread(img_paths[i])
-			imgs[i, :, :, :] = img.reshape((128, 64, 3))
+			imgs[i, :, :, :] = cv2.resize(img.reshape((128, 64, 3)), (128, 128))
 			classes[i] = unique_class_ids.index(class_ids[i])
 		return {
 			'img': imgs,
