@@ -155,6 +155,7 @@ class Model:
 		self.vgg_features.to(self.device)
 
 		summary = SummaryWriter(log_dir=tensorboard_dir)
+		epochs = self.config['train']['n_epochs']
 		if os.path.exists(checkpoint_dir) and os.path.exists(os.path.join(checkpoint_dir, 'objs.pkl')):
 			objs = pickle.load(os.path.join(checkpoint_dir, 'objs.pkl'), 'rb')
 			epochs, optimizer, scheduler = objs['epochs'], objs['optimizer'], objs['scheduler']
