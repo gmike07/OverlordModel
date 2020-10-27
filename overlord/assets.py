@@ -35,7 +35,8 @@ class AssetManager:
 
 	def recreate_model_dir(self, model_name):
 		model_dir = self.get_model_dir(model_name)
-
+		if os.path.exists(model_dir):
+			return model_dir
 		self.__recreate_dir(model_dir)
 		return model_dir
 
