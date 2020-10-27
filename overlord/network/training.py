@@ -639,7 +639,7 @@ class Model:
 		blank = torch.ones_like(f_reshape(samples['img'][0]))
 		summary = [torch.cat([blank] + list(f_reshape(img) for img in samples['img']), dim=2)]
 		for i in range(n_samples):
-			converted_imgs = [samples['img'][i]]
+			converted_imgs = [f_reshape(samples['img'][i])]
 
 			for j in range(n_samples):
 				generator = self.amortized_model.generator if amortized else self.latent_model.generator
