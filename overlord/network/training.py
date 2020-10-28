@@ -644,7 +644,7 @@ class Model:
 			for j in range(n_samples):
 				generator = self.amortized_model.generator if amortized else self.latent_model.generator
 				converted_img = generator(samples['content_code'][[j]], samples['class_code'][[i]], samples['style_code'][[i]])
-				converted_imgs.append(f_reshape(converted_img[0])).reshape((3, 128, 64))
+				converted_imgs.append(f_reshape(converted_img[0]))
 
 			summary.append(torch.cat(converted_imgs, dim=2))
 
