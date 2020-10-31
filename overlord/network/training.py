@@ -157,7 +157,7 @@ class Model:
 		summary = SummaryWriter(log_dir=tensorboard_dir)
 		epochs = self.config['train']['n_epochs']
 		if os.path.exists(model_dir) and os.path.exists(os.path.join(model_dir, 'objs.pkl')):
-			objs = pickle.load(os.path.join(model_dir, 'objs.pkl'), 'rb')
+			objs = pickle.load(open(os.path.join(model_dir, 'objs.pkl'), 'rb'))
 			epochs, optimizer, scheduler = objs['epochs'], objs['optimizer'], objs['scheduler']
 			model.latent_model = LatentModel(config)
 			model.latent_model.load_state_dict(torch.load(os.path.join(model_dir, 'latent.pth')))
