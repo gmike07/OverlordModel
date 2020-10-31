@@ -159,7 +159,7 @@ class Model:
 		if os.path.exists(model_dir) and os.path.exists(os.path.join(model_dir, 'objs.pkl')):
 			objs = pickle.load(open(os.path.join(model_dir, 'objs.pkl'), 'rb'))
 			epochs, optimizer, scheduler = objs['epochs'], objs['optimizer'], objs['scheduler']
-			model.latent_model.load_state_dict(torch.load(os.path.join(model_dir, 'latent.pth')))
+			self.latent_model.load_state_dict(torch.load(os.path.join(model_dir, 'latent.pth')))
 		for epoch in range(epochs):
 			self.latent_model.train()
 
