@@ -144,12 +144,6 @@ class Model:
 			}
 		], betas=(0.5, 0.999))
 
-		scheduler = CosineAnnealingLR(
-			optimizer,
-			T_max=self.config['train']['n_epochs'] * len(data_loader),
-			eta_min=self.config['train']['learning_rate']['min']
-		)
-
 		self.latent_model.style_encoder.to(self.device)
 		self.latent_model.generator.to(self.device)
 		self.vgg_features.to(self.device)
@@ -160,6 +154,11 @@ class Model:
 			objs = pickle.load(open(os.path.join(model_dir, 'objs.pkl'), 'rb'))
 			epochs, optimizer = objs['epochs'], objs['optimizer']
 			self.latent_model.load_state_dict(torch.load(os.path.join(model_dir, 'latent.pth')))
+		scheduler = CosineAnnealingLR(
+			optimizer,
+			T_max=self.config['train']['n_epochs'] * len(data_loader),
+			eta_min=self.config['train']['learning_rate']['min']
+		)
 		for epoch in range(200-epochs):
 			scheduler.step()
 		for epoch in range(epochs):
