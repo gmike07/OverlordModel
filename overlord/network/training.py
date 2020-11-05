@@ -2,7 +2,7 @@ import os
 import itertools
 import pickle
 from tqdm import tqdm
-import cv2
+
 import numpy as np
 
 from sklearn.linear_model import LogisticRegression
@@ -144,22 +144,31 @@ class Model:
 			}
 		], betas=(0.5, 0.999))
 
+		scheduler = CosineAnnealingLR(
+			optimizer,
+			T_max=self.config['train']['n_epochs'] * len(data_loader),
+			eta_min=self.config['train']['learning_rate']['min']
+		)
+
 		self.latent_model.style_encoder.to(self.device)
 		self.latent_model.generator.to(self.device)
 		self.vgg_features.to(self.device)
 
 		summary = SummaryWriter(log_dir=tensorboard_dir)
 		epochs = self.config['train']['n_epochs']
-		if os.path.exists(model_dir) and os.path.exists(os.path.join(model_dir, 'objs.pkl')):
+		if os.path.exists(model_dir) and os.path.exists(
+				os.path.join(model_dir, 'objs.pkl')):
 			objs = pickle.load(open(os.path.join(model_dir, 'objs.pkl'), 'rb'))
-			epochs, optimizer = objs['epochs'], objs['optimizer']
-			self.latent_model.load_state_dict(torch.load(os.path.join(model_dir, 'latent.pth')))
+			epochs = objs['epochs']
+			optimizer.load_state_dict(objs['optimizer'])
+			self.latent_model.load_state_dict(
+				torch.load(os.path.join(model_dir, 'latent.pth')))
 		scheduler = CosineAnnealingLR(
 			optimizer,
 			T_max=self.config['train']['n_epochs'] * len(data_loader),
 			eta_min=self.config['train']['learning_rate']['min']
 		)
-		for epoch in range(200-epochs):
+		for _ in range(200 - epochs):
 			scheduler.step()
 		for epoch in range(epochs):
 			self.latent_model.train()
@@ -192,7 +201,7 @@ class Model:
 
 			samples_fixed = self.generate_samples(dataset, randomized=False)
 			samples_random = self.generate_samples(dataset, randomized=True)
-			
+
 			summary.add_image(tag='samples-fixed', img_tensor=samples_fixed, global_step=epoch)
 			summary.add_image(tag='samples-random', img_tensor=samples_random, global_step=epoch)
 
@@ -201,8 +210,10 @@ class Model:
 				score_train, score_test = self.classification_score(X=content_codes, y=classes)
 				summary.add_scalar(tag='class_from_content/train', scalar_value=score_train, global_step=epoch)
 				summary.add_scalar(tag='class_from_content/test', scalar_value=score_test, global_step=epoch)
+			
+			if epoch % 5 == 0:
 				if os.path.exists(model_dir):
-					objs = {'epochs': epochs - epoch, 'optimizer': optimizer}
+					objs = {'epochs': epochs - epoch, 'optimizer': optimizer.state_dict()}
 					with open(os.path.join(model_dir, 'objs.pkl'), 'wb') as f:
 						pickle.dump(objs, f)
 			self.save(model_dir)
@@ -635,16 +646,15 @@ class Model:
 
 		samples = {name: tensor.to(self.device) for name, tensor in samples.items()}
 
-		f_reshape = lambda x: torch.from_numpy(cv2.resize(x.reshape((x.shape[1], x.shape[1], 3)).cpu().numpy(), (64, 128)).reshape((3, 128, 64))).to(self.device)
-		blank = torch.ones_like(f_reshape(samples['img'][0]))
-		summary = [torch.cat([blank] + list(f_reshape(img) for img in samples['img']), dim=2)]
+		blank = torch.ones_like(samples['img'][0])
+		summary = [torch.cat([blank] + list(samples['img']), dim=2)]
 		for i in range(n_samples):
-			converted_imgs = [f_reshape(samples['img'][i])]
+			converted_imgs = [samples['img'][i]]
 
 			for j in range(n_samples):
 				generator = self.amortized_model.generator if amortized else self.latent_model.generator
 				converted_img = generator(samples['content_code'][[j]], samples['class_code'][[i]], samples['style_code'][[i]])
-				converted_imgs.append(f_reshape(converted_img[0]))
+				converted_imgs.append(converted_img[0])
 
 			summary.append(torch.cat(converted_imgs, dim=2))
 
