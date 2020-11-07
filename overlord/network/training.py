@@ -222,7 +222,9 @@ class Model:
 
 	def amortize(self, imgs, classes, model_dir, tensorboard_dir):
 		self.amortized_model = AmortizedModel(self.config)
-		self.warmup(imgs, classes, model_dir, tensorboard_dir)
+		if not (os.path.exists(model_dir) and os.path.exists(os.path.join(model_dir, 'objs2.pkl'))):
+			self.warmup(imgs, classes, model_dir, tensorboard_dir)
+			epochs = self.config['amortize']['n_epochs']
 
 		data = dict(
 			img=torch.from_numpy(imgs).permute(0, 3, 1, 2),
@@ -255,9 +257,16 @@ class Model:
 
 		self.amortized_model.to(self.device)
 		self.vgg_features.to(self.device)
-
+		
+		if os.path.exists(model_dir) and os.path.exists(os.path.join(model_dir, 'objs2.pkl')):
+			objs = pickle.load(open(os.path.join(model_dir, 'objs2.pkl'), 'rb'))
+			epochs = objs['epochs']
+			generator_optimizer.load_state_dict(objs['generator_optimizer'])
+			discriminator_optimizer.load_state_dict(objs['discriminator_optimizer'])
+			self.latent_model.load_state_dict(torch.load(os.path.join(model_dir, 'amortized.pth')))
+		
 		summary = SummaryWriter(log_dir=tensorboard_dir)
-		for epoch in range(self.config['amortize']['n_epochs']):
+		for epoch in range(epochs):
 			self.amortized_model.train()
 
 			pbar = tqdm(iterable=data_loader)
@@ -310,7 +319,14 @@ class Model:
 				score_train, score_test = self.classification_score(X=content_codes, y=classes)
 				summary.add_scalar(tag='class_from_content/train', scalar_value=score_train, global_step=epoch)
 				summary.add_scalar(tag='class_from_content/test', scalar_value=score_test, global_step=epoch)
-
+				
+			if epoch % 4 == 0:
+				if os.path.exists(model_dir):
+					objs = {'epochs': epochs - epoch,
+						'generator_optimizer': generator_optimizer.state_dict(),
+						'discriminator_optimizer': discriminator_optimizer.state_dict()}
+					with open(os.path.join(model_dir, 'objs2.pkl'), 'wb') as f:
+						pickle.dump(objs, f)
 			self.save(model_dir)
 
 		summary.close()
