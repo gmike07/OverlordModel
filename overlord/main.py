@@ -2,7 +2,8 @@ import argparse
 import os
 import matplotlib.pyplot as plt
 import numpy as np
-
+import torch
+from network.utils import NamedTensorDataset, AugmentedDataset
 import data
 from assets import AssetManager
 from network.training import Model
@@ -110,7 +111,7 @@ def test(args):
 	dataset = AugmentedDataset(data)
 	im = model.generate_samples(dataset, randomized=True, amortized=True)
 	plt.figure()
-	plt.imshow(im.reshape((1408, 704, 3))
+	plt.imshow(im.reshape((1408, 704, 3)))
 	plt.savefig("fig.png")
 	plt.show()
 
