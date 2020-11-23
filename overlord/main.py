@@ -8,6 +8,7 @@ import data
 from assets import AssetManager
 from network.training import Model
 from config import base_config
+from torch.utils.tensorboard import SummaryWriter
 
 
 def preprocess(args, extras=[]):
@@ -105,28 +106,6 @@ def test(args):
 	)
 
 	dataset = NamedTensorDataset(data)
-	data_loader = DataLoader(
-			dataset, batch_size=self.config['amortize']['batch_size'],
-			shuffle=True, pin_memory=True, drop_last=True
-	)
-
-	generator_optimizer = Adam(
-			params=itertools.chain(
-				self.amortized_model.content_encoder.parameters(),
-				self.amortized_model.class_encoder.parameters(),
-				self.amortized_model.generator.parameters()
-			),
-
-			lr=self.config['amortize']['learning_rate']['generator'],
-			betas=(0.5, 0.999)
-		)
-
-	discriminator_optimizer = Adam(
-			params=self.amortized_model.discriminator.parameters(),
-			lr=self.config['amortize']['learning_rate']['discriminator'],
-			betas=(0.5, 0.999)
-		)
-		
 	summary = SummaryWriter(log_dir=tensorboard_dir)
 	model = Model.load(model_dir)
 	model.amortized_model.to('cuda')
@@ -138,10 +117,11 @@ def test(args):
 		)
 	dataset = AugmentedDataset(data)
 	im = model.generate_samples(dataset, randomized=True, amortized=True)
-	plt.figure()
-	plt.imshow(im.reshape((1408, 704, 3)))
-	plt.savefig("fig.png")
-	plt.show()
+	samples_fixed = model.generate_samples(dataset, randomized=False, amortized=True)
+	samples_random = model.generate_samples(dataset, randomized=True, amortized=True) 
+	summary.add_image(tag='samples-fixed', img_tensor=samples_fixed, global_step=0) 
+	summary.add_image(tag='samples-random', img_tensor=samples_random, global_step=0)
+	summary.close()
 
 
 def translate(args):
