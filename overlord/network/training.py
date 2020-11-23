@@ -662,17 +662,16 @@ class Model:
 			samples['style_code'] = self.latent_model.style_encoder(samples['img'].to(self.device))
 
 		samples = {name: tensor.to(self.device) for name, tensor in samples.items()}
-		f = lambda x: cv2.resize(x.cpu().reshape((128, 128, 3)), (128, 64))
-		samples['img'] = [f(img) for img in samples['img']}
-		blank = torch.ones_like(samples['img'][0])
-		summary = [torch.cat([blank] + list(samples['img']), dim=2)]
+		f = lambda x: torch.from_array(cv2.resize(x.cpu().reshape((128, 128, 3)), (128, 64)).reshape((3, 128, 64)))
+		blank = torch.ones_like(f(samples['img'][0]))
+		summary = [torch.cat([blank] + list(f(img) for img in samples['img']), dim=2)]
 		for i in range(n_samples):
-			converted_imgs = [samples['img'][i]]
+			converted_imgs = [f(samples['img'][i])]
 
 			for j in range(n_samples):
 				generator = self.amortized_model.generator if amortized else self.latent_model.generator
 				converted_img = generator(samples['content_code'][[j]], samples['class_code'][[i]], samples['style_code'][[i]])
-				converted_imgs.append(converted_img[0])
+				converted_imgs.append(f(converted_img[0]))
 
 			summary.append(torch.cat(converted_imgs, dim=2))
 
