@@ -2,6 +2,7 @@ import os
 import itertools
 import pickle
 from tqdm import tqdm
+import cv2
 
 import numpy as np
 
@@ -661,7 +662,8 @@ class Model:
 			samples['style_code'] = self.latent_model.style_encoder(samples['img'].to(self.device))
 
 		samples = {name: tensor.to(self.device) for name, tensor in samples.items()}
-
+		f = lambda x: cv2.resize(x.cpu().reshape((128, 128, 3)), (128, 64))
+		samples['img'] = [f(img) for img in samples['img']}
 		blank = torch.ones_like(samples['img'][0])
 		summary = [torch.cat([blank] + list(samples['img']), dim=2)]
 		for i in range(n_samples):
