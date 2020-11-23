@@ -87,6 +87,29 @@ def amortize(args):
 	model = Model.load(model_dir)
 	model.amortize(imgs, classes, model_dir, amortized_tensorboard_dir)
 
+	
+def test(args):
+	assets = AssetManager(args.base_dir)
+	model_dir = assets.get_model_dir(args.model_name)
+	tensorboard_dir = assets.get_tensorboard_dir(args.model_name)
+
+	data = np.load(assets.get_preprocess_file_path(args.data_name))
+	imgs = data['img'].astype(np.float32) / 255.0
+	classes = data['class']
+
+	amortized_tensorboard_dir = os.path.join(tensorboard_dir, 'amortized')
+	if not os.path.exists(amortized_tensorboard_dir):
+		os.mkdir(amortized_tensorboard_dir)
+
+	model = Model.load(model_dir)
+	data = dict(
+			img=torch.from_numpy(imgs).permute(0, 3, 1, 2),
+			img_id=torch.from_numpy(np.arange(imgs.shape[0])),
+			class_id=torch.from_numpy(classes.astype(np.int64))
+		)
+	dataset = AugmentedDataset(data)
+	model.generate_samples(randomized=True, amortized=True)
+
 
 def translate(args):
 	assets = AssetManager(args.base_dir)
@@ -168,6 +191,11 @@ def main():
 	amortize_parser.add_argument('-dn', '--data-name', type=str, required=True)
 	amortize_parser.add_argument('-mn', '--model-name', type=str, required=True)
 	amortize_parser.set_defaults(func=amortize)
+	
+	amortize_parser = action_parsers.add_parser('test')
+	amortize_parser.add_argument('-dn', '--data-name', type=str, required=True)
+	amortize_parser.add_argument('-mn', '--model-name', type=str, required=True)
+	amortize_parser.set_defaults(func=test)
 
 	translate_parser = action_parsers.add_parser('translate')
 	translate_parser.add_argument('-dn', '--data-name', type=str, required=True)
