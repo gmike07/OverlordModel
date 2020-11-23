@@ -97,12 +97,40 @@ def test(args):
 	data = np.load(assets.get_preprocess_file_path(args.data_name))
 	imgs = data['img'].astype(np.float32) / 255.0
 	classes = data['class']
+	
+	data = dict(
+			img=torch.from_numpy(imgs).permute(0, 3, 1, 2),
+			img_id=torch.from_numpy(np.arange(imgs.shape[0])),
+			class_id=torch.from_numpy(classes.astype(np.int64))
+	)
 
-	amortized_tensorboard_dir = os.path.join(tensorboard_dir, 'amortized')
-	if not os.path.exists(amortized_tensorboard_dir):
-		os.mkdir(amortized_tensorboard_dir)
+	dataset = NamedTensorDataset(data)
+	data_loader = DataLoader(
+			dataset, batch_size=self.config['amortize']['batch_size'],
+			shuffle=True, pin_memory=True, drop_last=True
+	)
 
+	generator_optimizer = Adam(
+			params=itertools.chain(
+				self.amortized_model.content_encoder.parameters(),
+				self.amortized_model.class_encoder.parameters(),
+				self.amortized_model.generator.parameters()
+			),
+
+			lr=self.config['amortize']['learning_rate']['generator'],
+			betas=(0.5, 0.999)
+		)
+
+	discriminator_optimizer = Adam(
+			params=self.amortized_model.discriminator.parameters(),
+			lr=self.config['amortize']['learning_rate']['discriminator'],
+			betas=(0.5, 0.999)
+		)
+		
+	summary = SummaryWriter(log_dir=tensorboard_dir)
 	model = Model.load(model_dir)
+	model.amortized_model.to('cuda')
+	model.vgg_features.to('cuda')
 	data = dict(
 			img=torch.from_numpy(imgs).permute(0, 3, 1, 2),
 			img_id=torch.from_numpy(np.arange(imgs.shape[0])),
