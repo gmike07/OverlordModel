@@ -1,7 +1,7 @@
 base_config = dict(
 	content_dim=64,
 	class_dim=512,
-	style_dim=64,
+	style_dim=1,
 
 	content_std=0,
 
