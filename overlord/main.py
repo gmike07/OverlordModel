@@ -1,6 +1,6 @@
 import argparse
 import os
-
+import matplotlib.pyplot as plt
 import numpy as np
 
 import data
@@ -108,7 +108,10 @@ def test(args):
 			class_id=torch.from_numpy(classes.astype(np.int64))
 		)
 	dataset = AugmentedDataset(data)
-	model.generate_samples(randomized=True, amortized=True)
+	im = model.generate_samples(randomized=True, amortized=True)
+	plt.figure()
+	plt.imshow(im)
+	plt.show()
 
 
 def translate(args):
