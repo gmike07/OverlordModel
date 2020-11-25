@@ -84,7 +84,7 @@ class Classifier:
 
                 optimizer.zero_grad()
                 predictions = self.model(inputs)
-                id_loss = id_criterion(predictions, labels)
+                loss = id_criterion(predictions, labels)
 
                 loss.backward()
                 optimizer.step()
