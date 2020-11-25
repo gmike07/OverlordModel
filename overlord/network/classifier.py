@@ -90,7 +90,7 @@ class Classifier:
                 optimizer.step()
                 scheduler.step()
 
-                train_id_loss =  id_loss.item()
+                train_id_loss =  loss.item()
                 accuracy = self.accuracy_(predictions, labels).item()
 
                 pbar.set_description_str('epoch #{}'.format(epoch))
