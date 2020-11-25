@@ -105,11 +105,11 @@ class Classifier:
 
     def save(self, model_dir):
         torch.save(self.model.state_dict(), os.path.join(model_dir,
-                                                         './classifier.pth'))
+                                                         'classifier.pth'))
 
     def load(self, model_dir):
         self.model.load_state_dict(torch.load(os.path.join(model_dir,
-                                                           './classifier.pth')))
+                                                           'classifier.pth')))
 
     def eval(self, test_dataset, batch_size=64):
         self.model.eval()
