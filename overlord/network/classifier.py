@@ -6,7 +6,9 @@ from torch.optim import Adam
 from torch.utils.data import DataLoader
 from torch.optim.lr_scheduler import CosineAnnealingLR
 from tqdm import tqdm
+import torchvision
 from torchvision.transforms import Compose, ToTensor
+from network.utils import AverageMeter
 import os
 
 
@@ -16,7 +18,10 @@ class Classifier:
         for param in model_conv.parameters():
             param.requires_grad = False
         num_ftrs = model_conv.fc.in_features
-        model_conv.fc = nn.Linear(num_ftrs, num_classes)
+        model_conv.fc = nn.Sequential(
+          nn.senn.Linear(num_ftrs, 2048), nn.Dropout(0.5),
+          nn.Linear(2048, num_classes)
+        )
         print(num_ftrs)
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.model = model.to(self.device)
