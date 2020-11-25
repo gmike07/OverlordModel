@@ -104,6 +104,8 @@ class Classifier:
             self.save(model_dir)
 
     def save(self, model_dir):
+        if not os.path.exists(model_dir):
+            os.mkdir(model_dir)
         torch.save(self.model.state_dict(), os.path.join(model_dir,
                                                          'classifier.pth'))
 
