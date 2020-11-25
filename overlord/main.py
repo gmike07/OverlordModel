@@ -9,7 +9,19 @@ from assets import AssetManager
 from network.training import Model
 from config import base_config
 from torch.utils.tensorboard import SummaryWriter
+from network.classifier import Classifier
 
+
+def classify(args):
+	assets = AssetManager(args.base_dir)
+	model_dir = assets.get_model_dir(args.model_name)
+
+	data = np.load(assets.get_preprocess_file_path(args.data_name))
+	imgs = data['img'].astype(np.float32) / 255.0
+	classes = data['class']
+
+	model = Classifier(len(np.unique(classes)))
+	model.train(model_dir, imgs, classes)
 
 def preprocess(args, extras=[]):
 	assets = AssetManager(args.base_dir)
