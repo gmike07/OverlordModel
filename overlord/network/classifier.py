@@ -27,29 +27,23 @@ class Classifier:
         self.model = self.model.to(self.device)
 
     def train(self, model_dir, imgs, classes, batch_size=64, n_epochs=100, split_size=0.9):
+        data = dict(
+            img=torch.from_numpy(imgs).permute(0, 3, 1, 2),
+            img_id=torch.from_numpy(np.arange(imgs.shape[0])),
+            class_id=torch.from_numpy(classes.astype(np.int64))
+        )
+        dataset = NamedTensorDataset(train_data)
         id_criterion = nn.CrossEntropyLoss()
-        split_index = int(len(imgs) * split_size)
-        train_imgs, val_imgs = imgs[:split_index], imgs[:split_index]
-
-        train_data = dict(
-            img=torch.from_numpy(train_imgs).permute(0, 3, 1, 2),
-            img_id=torch.from_numpy(np.arange(train_imgs.shape[0])),
-            class_id=torch.from_numpy(classes.astype(np.int64))
-        )
-
-        val_data = dict(
-            img=torch.from_numpy(val_imgs).permute(0, 3, 1, 2),
-            img_id=torch.from_numpy(np.arange(val_imgs.shape[0])),
-            class_id=torch.from_numpy(classes.astype(np.int64))
-        )
+        indexes = np.random.choice(imgs, size=int(len(imgs) * split_size), replace=False)
+        train_dataset, val_dataset = dataset[indexes], dataset[~indexes]
 
         train_loader = DataLoader(
-            NamedTensorDataset(train_data), batch_size=batch_size,
+            train_dataset, batch_size=batch_size,
             shuffle=True, pin_memory=True, drop_last=True
         )
 
         val_loader = DataLoader(
-            NamedTensorDataset(val_data), batch_size=batch_size,
+            val_dataset, batch_size=batch_size,
             shuffle=True, pin_memory=True, drop_last=True
         )
 
