@@ -27,16 +27,24 @@ class Classifier:
         self.model = self.model.to(self.device)
 
     def train(self, model_dir, imgs, classes, batch_size=64, n_epochs=100, split_size=0.9):
-        data = dict(
-            img=torch.from_numpy(imgs).permute(0, 3, 1, 2),
-            img_id=torch.from_numpy(np.arange(imgs.shape[0])),
-            class_id=torch.from_numpy(classes.astype(np.int64))
-        )
-        dataset = NamedTensorDataset(data)
-        id_criterion = nn.CrossEntropyLoss()
+        split_index = int(len(imgs) * split_size)
         np.random.seed(0)
         indexes = np.random.choice(np.arange(imgs.shape[0]), size=int(len(imgs) * split_size), replace=False)
-        train_dataset, val_dataset = dataset[indexes], dataset[~indexes]
+        other_indexes = np.setdiff1d(np.arange(imgs.shape[0]), indexes)
+        train_data = dict(
+            img=torch.from_numpy(imgs[indexes]).permute(0, 3, 1, 2),
+            img_id=torch.from_numpy(np.arange(imgs[indexes].shape[0])),
+            class_id=torch.from_numpy(classes[indexes].astype(np.int64))
+        )
+        train_dataset = NamedTensorDataset(train_data)
+                          
+        val_data = dict(
+            img=torch.from_numpy(imgs[other_indexes]).permute(0, 3, 1, 2),
+            img_id=torch.from_numpy(np.arange(imgs[other_indexes].shape[0])),
+            class_id=torch.from_numpy(classes[other_indexes].astype(np.int64))
+        )
+        val_dataset = NamedTensorDataset(val_data)     
+        id_criterion = nn.CrossEntropyLoss()
 
         train_loader = DataLoader(
             train_dataset, batch_size=batch_size,
