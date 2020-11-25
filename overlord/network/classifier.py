@@ -7,7 +7,6 @@ from torch.utils.data import DataLoader
 from torch.optim.lr_scheduler import CosineAnnealingLR
 from tqdm import tqdm
 import torchvision
-from torchvision.transforms import Compose, ToTensor
 from network.utils import AverageMeter
 import os
 
@@ -26,19 +25,21 @@ class Classifier:
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.model = model.to(self.device)
 
-    def train(self, model_dir, imgs, batch_size=64, n_epochs=100, split_size=0.9):
+    def train(self, model_dir, imgs, classes, batch_size=64, n_epochs=100, split_size=0.9):
         id_criterion = nn.CrossEntropyLoss()
         split_index = int(len(imgs) * split_size)
         train_imgs, val_imgs = imgs[:split_index], imgs[:split_index]
 
         train_data = dict(
             img=torch.from_numpy(train_imgs).permute(0, 3, 1, 2),
-            img_id=torch.from_numpy(np.arange(train_imgs.shape[0]))
+            img_id=torch.from_numpy(np.arange(train_imgs.shape[0])),
+            class_id=torch.from_numpy(classes.astype(np.int64))
         )
 
         val_data = dict(
             img=torch.from_numpy(val_imgs).permute(0, 3, 1, 2),
-            img_id=torch.from_numpy(np.arange(val_imgs.shape[0]))
+            img_id=torch.from_numpy(np.arange(val_imgs.shape[0])),
+            class_id=torch.from_numpy(classes.astype(np.int64))
         )
 
         train_loader = DataLoader(
@@ -84,7 +85,7 @@ class Classifier:
 
                 optimizer.zero_grad()
                 images, predictions = self.model(inputs)
-                id_loss = id_criterion(predictions, batch['img_id'])
+                id_loss = id_criterion(predictions, batch['class_id'])
 
                 loss.backward()
                 optimizer.step()
