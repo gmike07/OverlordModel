@@ -102,7 +102,7 @@ class Classifier:
                     with open(os.path.join(model_dir, 'objs3.pkl'), 'wb') as f:
                         pickle.dump(objs, f)
             if epoch % 5 == 0:
-                model.eval(val_dataset)
+                self.model.eval(val_dataset)
             pbar.close()
             self.save(model_dir)
 
