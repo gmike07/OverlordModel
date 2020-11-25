@@ -28,23 +28,13 @@ class Classifier:
         self.model = self.model.to(self.device)
 
     def train(self, model_dir, imgs, classes, batch_size=64, n_epochs=300, split_size=0.9):
-        split_index = int(len(imgs) * split_size)
-        np.random.seed(0)
-        indexes = np.random.choice(np.arange(imgs.shape[0]), size=int(len(imgs) * split_size), replace=False)
-        other_indexes = np.setdiff1d(np.arange(imgs.shape[0]), indexes)
         train_data = dict(
-            img=torch.from_numpy(imgs[indexes]).permute(0, 3, 1, 2),
-            img_id=torch.from_numpy(np.arange(imgs[indexes].shape[0])),
-            class_id=torch.from_numpy(classes[indexes].astype(np.int64))
+            img=torch.from_numpy(imgs]).permute(0, 3, 1, 2),
+            img_id=torch.from_numpy(np.arange(imgs.shape[0])),
+            class_id=torch.from_numpy(classes.astype(np.int64))
         )
         train_dataset = NamedTensorDataset(train_data)
-                          
-        val_data = dict(
-            img=torch.from_numpy(imgs[other_indexes]).permute(0, 3, 1, 2),
-            img_id=torch.from_numpy(np.arange(imgs[other_indexes].shape[0])),
-            class_id=torch.from_numpy(classes[other_indexes].astype(np.int64))
-        )
-        val_dataset = NamedTensorDataset(val_data)     
+                           
         id_criterion = nn.CrossEntropyLoss()
 
         train_loader = DataLoader(
@@ -58,7 +48,7 @@ class Classifier:
                                       T_max=n_epochs * len(train_loader),
                                       eta_min=0.000001)
         self.train_(model_dir, id_criterion, optimizer,
-                    train_loader, val_dataset, scheduler, n_epochs)
+                    train_loader, scheduler, n_epochs)
 
     @staticmethod
     def accuracy_(predictions, labels):
@@ -66,7 +56,7 @@ class Classifier:
         return 100.0 * correct / labels.size(0)
 
     def train_(self, model_dir, id_criterion, optimizer,
-               data_loader, val_dataset, scheduler, n_epochs):
+               data_loader, scheduler, n_epochs):
         if os.path.exists(model_dir) and os.path.exists(
                 os.path.join(model_dir, 'objs3.pkl')):
             objs = pickle.load(open(os.path.join(model_dir, 'objs3.pkl'), 'rb'))
@@ -102,8 +92,6 @@ class Classifier:
                             'optimizer': optimizer.state_dict()}
                     with open(os.path.join(model_dir, 'objs3.pkl'), 'wb') as f:
                         pickle.dump(objs, f)
-            if epoch % 10 == 0:
-                self.eval(val_dataset)
             pbar.close()
             self.save(model_dir)
 
