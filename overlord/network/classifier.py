@@ -9,21 +9,22 @@ from tqdm import tqdm
 import torchvision
 from network.utils import AverageMeter
 import os
-
+import numpy as np
+from network.utils import NamedTensorDataset, AugmentedDataset
 
 class Classifier:
     def __init__(self, num_classes):
-        self.model = model_conv = torchvision.models.resnet(pretrained=True)
-        for param in model_conv.parameters():
+        self.model = torchvision.models.resnet50(pretrained=True)
+        for param in self.model.parameters():
             param.requires_grad = False
-        num_ftrs = model_conv.fc.in_features
-        model_conv.fc = nn.Sequential(
-          nn.senn.Linear(num_ftrs, 2048), nn.Dropout(0.5),
+        num_ftrs = self.model.fc.in_features
+        self.model.fc = nn.Sequential(
+          nn.Linear(num_ftrs, 2048), nn.Dropout(0.5),
           nn.Linear(2048, num_classes)
         )
         print(num_ftrs)
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
-        self.model = model.to(self.device)
+        self.model = self.model.to(self.device)
 
     def train(self, model_dir, imgs, classes, batch_size=64, n_epochs=100, split_size=0.9):
         id_criterion = nn.CrossEntropyLoss()
