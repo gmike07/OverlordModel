@@ -9,6 +9,7 @@ from tqdm import tqdm
 import torchvision
 from network.utils import AverageMeter
 import os
+import pickle
 import numpy as np
 from network.utils import NamedTensorDataset, AugmentedDataset
 
@@ -26,7 +27,7 @@ class Classifier:
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.model = self.model.to(self.device)
 
-    def train(self, model_dir, imgs, classes, batch_size=64, n_epochs=100, split_size=0.9):
+    def train(self, model_dir, imgs, classes, batch_size=64, n_epochs=300, split_size=0.9):
         split_index = int(len(imgs) * split_size)
         np.random.seed(0)
         indexes = np.random.choice(np.arange(imgs.shape[0]), size=int(len(imgs) * split_size), replace=False)
@@ -95,13 +96,13 @@ class Classifier:
 
                 pbar.set_description_str('epoch #{}'.format(epoch))
                 pbar.set_postfix(accuracy=accuracy, id_loss=train_id_loss)
-            if epoch % 10 == 0:
+            if epoch % 20 == 0:
                 if os.path.exists(model_dir):
                     objs = {'epochs': epochs - epoch,
                             'optimizer': optimizer.state_dict()}
                     with open(os.path.join(model_dir, 'objs3.pkl'), 'wb') as f:
                         pickle.dump(objs, f)
-            if epoch % 5 == 0:
+            if epoch % 10 == 0:
                 self.eval(val_dataset)
             pbar.close()
             self.save(model_dir)
