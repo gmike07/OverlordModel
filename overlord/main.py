@@ -241,6 +241,11 @@ def main():
 	encode_parser.add_argument('-mn', '--model-name', type=str, required=True)
 	encode_parser.add_argument('-a', '--amortized', action='store_true')
 	encode_parser.set_defaults(func=encode)
+	
+	classifier_parser = action_parsers.add_parser('classify')
+	classifier_parser.add_argument('-dn', '--data-name', type=str, required=True)
+	classifier_parser.add_argument('-mn', '--model-name', type=str, required=True)
+	classifier_parser.set_defaults(func=classify)
 
 	args, extras = parser.parse_known_args()
 	if len(extras) == 0:
