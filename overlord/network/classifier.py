@@ -32,9 +32,10 @@ class Classifier:
             img_id=torch.from_numpy(np.arange(imgs.shape[0])),
             class_id=torch.from_numpy(classes.astype(np.int64))
         )
-        dataset = NamedTensorDataset(train_data)
+        dataset = NamedTensorDataset(data)
         id_criterion = nn.CrossEntropyLoss()
-        indexes = np.random.choice(imgs, size=int(len(imgs) * split_size), replace=False)
+        np.random.seed(0)
+        indexes = np.random.choice(np.arange(imgs.shape[0]), size=int(len(imgs) * split_size), replace=False)
         train_dataset, val_dataset = dataset[indexes], dataset[~indexes]
 
         train_loader = DataLoader(
@@ -50,7 +51,7 @@ class Classifier:
         optimizer = Adam(self.model.parameters(), lr=0.001)
 
         scheduler = CosineAnnealingLR(optimizer,
-                                      T_max=n_epochs * len(data_loader),
+                                      T_max=n_epochs * len(train_loader),
                                       eta_min=0.000001)
         self.train_(model_dir, id_criterion, optimizer,
                     train_loader, val_loader, scheduler, n_epochs)
@@ -133,8 +134,4 @@ class Classifier:
         pbar.close()
         print('accuracy on test:', accuracy.avg,
               'loss on test:', test_loss.avg)
-
-
-if __name__ == '__main__':
-    classifier = Classifier(10)
 
