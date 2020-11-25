@@ -84,11 +84,11 @@ class Classifier:
             pbar = tqdm(iterable=data_loader)
             self.model.train()
             for batch in pbar:
-                inputs, labels = batch['img']
+                inputs, labels = batch['img'], batch['class_id']
                 inputs, labels = inputs.to(self.device), labels.to(self.device)
 
                 optimizer.zero_grad()
-                images, predictions = self.model(inputs)
+                predictions = self.model(inputs)
                 id_loss = id_criterion(predictions, batch['class_id'])
 
                 loss.backward()
