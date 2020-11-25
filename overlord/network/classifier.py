@@ -51,18 +51,13 @@ class Classifier:
             shuffle=True, pin_memory=True, drop_last=True
         )
 
-        val_loader = DataLoader(
-            val_dataset, batch_size=batch_size,
-            shuffle=True, pin_memory=True, drop_last=True
-        )
-
         optimizer = Adam(self.model.parameters(), lr=0.001)
 
         scheduler = CosineAnnealingLR(optimizer,
                                       T_max=n_epochs * len(train_loader),
                                       eta_min=0.000001)
         self.train_(model_dir, id_criterion, optimizer,
-                    train_loader, val_loader, scheduler, n_epochs)
+                    train_loader, val_dataset, scheduler, n_epochs)
 
     @staticmethod
     def accuracy_(predictions, labels):
@@ -70,7 +65,7 @@ class Classifier:
         return 100.0 * correct / labels.size(0)
 
     def train_(self, model_dir, id_criterion, optimizer,
-               data_loader, val_loader, scheduler, n_epochs):
+               data_loader, val_dataset, scheduler, n_epochs):
         if os.path.exists(model_dir) and os.path.exists(
                 os.path.join(model_dir, 'objs3.pkl')):
             objs = pickle.load(open(os.path.join(model_dir, 'objs3.pkl'), 'rb'))
@@ -89,7 +84,7 @@ class Classifier:
 
                 optimizer.zero_grad()
                 predictions = self.model(inputs)
-                id_loss = id_criterion(predictions, batch['class_id'])
+                id_loss = id_criterion(predictions, labels)
 
                 loss.backward()
                 optimizer.step()
@@ -107,7 +102,7 @@ class Classifier:
                     with open(os.path.join(model_dir, 'objs3.pkl'), 'wb') as f:
                         pickle.dump(objs, f)
             if epoch % 5 == 0:
-                model.eval(val_loader)
+                model.eval(val_dataset)
             pbar.close()
             self.save(model_dir)
 
@@ -130,7 +125,7 @@ class Classifier:
         pbar = tqdm(iterable=data_loader)
 
         for batch in pbar:
-            inputs, labels = batch
+            inputs, labels = batch['img'], batch['class_id']
             inputs, labels = inputs.to(self.device), labels.to(self.device)
 
             predictions = self.model(inputs)
