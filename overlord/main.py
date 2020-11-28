@@ -225,10 +225,10 @@ def main():
 	preprocess_parser.add_argument('-dn', '--data-name', type=str, required=True)
 	preprocess_parser.set_defaults(func=preprocess)
 	
-	preprocess_parser = action_parsers.add_parser('join-datasets')
-	preprocess_parser.add_argument('-dn1', '--data-name1', type=str, required=True)
-	preprocess_parser.add_argument('-dn2', '--data-name2', type=str, required=True)
-	preprocess_parser.set_defaults(func=join_datasets)
+	preprocess_style_parser = action_parsers.add_parser('join-datasets')
+	preprocess_style_parser.add_argument('-dn1', '--data-name1', type=str, required=True)
+	preprocess_style_parser.add_argument('-dn2', '--data-name2', type=str, required=True)
+	preprocess_style_parser.set_defaults(func=join_datasets)
 
 	split_parser = action_parsers.add_parser('split')
 	split_parser.add_argument('-i', '--input-data-name', type=str, required=True)
