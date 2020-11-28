@@ -176,7 +176,7 @@ def translate_cool(args):
 
 	model = Model.load(model_dir)
 
-	model.translate(imgs, classes, args.n_translations_per_image, out_dir, save_dir=file=assets.get_preprocess_file_path(args.data_name))
+	model.translate(imgs, classes, args.n_translations_per_image, out_dir, save_dir=file=assets.get_preprocess_file_path(args.data_name_save))
 		
 		
 def summary(args):
@@ -252,6 +252,8 @@ def main():
 	preprocess_style_parser.add_argument('-dn2', '--data-name2', type=str, required=True)
 	preprocess_style_parser.add_argument('-mn', '--model-name', type=str, required=True)
 	preprocess_style_parser.set_defaults(func=join_datasets)
+	
+	
 
 	split_parser = action_parsers.add_parser('split')
 	split_parser.add_argument('-i', '--input-data-name', type=str, required=True)
@@ -282,6 +284,13 @@ def main():
 	translate_parser.add_argument('-nt', '--n-translations-per-image', type=int, required=True)
 	translate_parser.add_argument('-f', '--full', action='store_true')
 	translate_parser.set_defaults(func=translate)
+	
+	translate_cool_parser = action_parsers.add_parser('translate-cool')
+	translate_cool_parser.add_argument('-dn', '--data-name', type=str, required=True)
+	translate_cool_parser.add_argument('-mn', '--model-name', type=str, required=True)
+	translate_cool_parser.add_argument('-nt', '--n-translations-per-image', type=int, required=True)
+	translate_cool_parser.add_argument('-dns', '--data-name-save', type=str, required=True)
+	translate_cool_parser.set_defaults(func=translate_cool)
 
 	summary_parser = action_parsers.add_parser('summary')
 	summary_parser.add_argument('-dn', '--data-name', type=str, required=True)
