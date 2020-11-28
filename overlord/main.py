@@ -199,6 +199,7 @@ def join_datasets(args):
 	
 	new_images = np.empty(shape=(2 * len(imgs), 128, 128, 3), dtype=np.uint8)
 	new_classes = np.empty(shape=(2 * len(imgs),), dtype=np.uint32)
+	regex = re.compile(r'{(\d+)}.*?')
 	for file_name in os.listdir(os.path.join(eval_dir, 'translations', 'translation')):
 		img_path = os.path.join(eval_dir, 'translations', 'translation', file_name)
 		if file_name.startswith('{-1}') or not file_name.endswith('.png'):
