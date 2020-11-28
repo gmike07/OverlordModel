@@ -11,6 +11,8 @@ from config import base_config
 from torch.utils.tensorboard import SummaryWriter
 from network.classifier import Classifier
 import re
+import imageio
+
 
 def classify(args):
 	assets = AssetManager(args.base_dir)
@@ -199,14 +201,14 @@ def join_datasets(args):
 	
 	new_images = np.empty(shape=(2 * len(imgs), 128, 128, 3), dtype=np.uint8)
 	new_classes = np.empty(shape=(2 * len(imgs),), dtype=np.uint32)
-	regex = re.compile(r'(\d+).*?')
+	regex = re.compile(r'(\d+)(.*?)')
 	for file_name in os.listdir(os.path.join(eval_dir, 'translations', 'translation')):
 		img_path = os.path.join(eval_dir, 'translations', 'translation', file_name)
 		if file_name.startswith('{-1}') or not file_name.endswith('.png'):
 			continue
-		i = regex.match(file_name).groups()
+		i, _ = regex.match(file_name).groups()
 		i = int(i)
-		new_images[2*i] = img[i]
+		new_images[2*i] = imgs[i]
 		new_images[2*i+1] = imageio.imread(img_path)
 		new_classes[2*i] = classes[i]
 		new_classes[2*i+1] = classes[i]
