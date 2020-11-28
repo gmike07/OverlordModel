@@ -176,7 +176,7 @@ def translate_cool(args):
 
 	model = Model.load(model_dir)
 
-	model.translate(imgs, classes, args.n_translations_per_image, out_dir, save_dir=file=assets.get_preprocess_file_path(args.data_name_save))
+	model.translate(imgs, classes, args.n_translations_per_image, out_dir, save_dir=assets.get_preprocess_file_path(args.data_name_save))
 		
 		
 def summary(args):
