@@ -161,6 +161,24 @@ def translate(args):
 		model.translate(imgs, classes, args.n_translations_per_image, out_dir)
 
 
+		
+def translate_cool(args):
+	assets = AssetManager(args.base_dir)
+	model_dir = assets.get_model_dir(args.model_name)
+	eval_dir = assets.recreate_eval_dir(args.model_name)
+
+	out_dir = os.path.join(eval_dir, 'translations')
+	os.mkdir(out_dir)
+
+	data = np.load(assets.get_preprocess_file_path(args.data_name))
+	imgs = data['img'].astype(np.float32) / 255.0
+	classes = data['class']
+
+	model = Model.load(model_dir)
+
+	model.translate(imgs, classes, args.n_translations_per_image, out_dir, save_dir=save_dir)
+		
+		
 def summary(args):
 	assets = AssetManager(args.base_dir)
 	model_dir = assets.get_model_dir(args.model_name)
