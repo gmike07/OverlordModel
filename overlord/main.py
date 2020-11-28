@@ -31,6 +31,47 @@ def preprocess(args, extras=[]):
 
 	np.savez(file=assets.get_preprocess_file_path(args.data_name), **img_dataset.read())
 
+	
+def preprocess_style(args, extras=[]):
+	assets = AssetManager(args.base_dir)
+
+	img_dataset_def = data.supported_datasets[args.dataset_id]
+	img_dataset = img_dataset_def(args.dataset_path, extras)
+	data = img_dataset.read()
+	imgs = data['img'].astype(np.float32) / 255.0
+	classes = data['class']
+
+	config = dict(
+		img_shape=imgs.shape[1:],
+		n_imgs=imgs.shape[0],
+		n_classes=np.unique(classes).size
+	)
+
+	config.update(base_config)
+	
+	model_dir = assets.get_model_dir(args.model_name)
+	model = Model(config)
+	model.load(model_dir)
+	length = len(data['img'])
+	
+	data_imgs = np.empty(shape=(2*length, 128, 128, 3), dtype=np.uint8)
+	data_classes = np.empty(shape=(2*length,), dtype=np.uint32)
+	for i in range(length):
+		data_imgs[2*i] = imgs[i]
+		data_classes[2*i] = classes[i]
+		j = np.random.choice(np.arange(length))
+		img = imgs[i].permute(0, 3, 1, 2)
+		with torch.no_grad():
+			content_code = model.amortized_model.content_encoder(img)
+			class_code = model.amortized_model.class_encoder(img)
+			style_code = model.amortized_model.style_encoder(img)
+
+		img_reconstructed = model.amortized_model.generator(content_code, class_code, style_code)
+		data_imgs[2*i+1] = img_reconstructed[0].permute(1, 2, 0) * 255
+		data_classes[2*i+1] = classes[i]
+		
+	np.savez(file=assets.get_preprocess_file_path(args.data_name), {'img': imgs, 'class': classes})
+
 
 def split(args):
 	assets = AssetManager(args.base_dir)
@@ -198,6 +239,13 @@ def main():
 	preprocess_parser.add_argument('-dp', '--dataset-path', type=str, required=True)
 	preprocess_parser.add_argument('-dn', '--data-name', type=str, required=True)
 	preprocess_parser.set_defaults(func=preprocess)
+	
+	preprocess_parser = action_parsers.add_parser('preprocess-style')
+	preprocess_parser.add_argument('-di', '--dataset-id', type=str, choices=data.supported_datasets, required=True)
+	preprocess_parser.add_argument('-dp', '--dataset-path', type=str, required=True)
+	preprocess_parser.add_argument('-dn', '--data-name', type=str, required=True)
+	train_parser.add_argument('-mn', '--model-name', type=str, required=True)
+	preprocess_parser.set_defaults(func=preprocess_style)
 
 	split_parser = action_parsers.add_parser('split')
 	split_parser.add_argument('-i', '--input-data-name', type=str, required=True)
