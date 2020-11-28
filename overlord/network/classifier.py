@@ -29,7 +29,7 @@ class Classifier:
 
     def train(self, model_dir, imgs, classes, batch_size=64, n_epochs=300, split_size=0.9):
         train_data = dict(
-            img=torch.from_numpy(imgs]).permute(0, 3, 1, 2),
+            img=torch.from_numpy(imgs).permute(0, 3, 1, 2),
             img_id=torch.from_numpy(np.arange(imgs.shape[0])),
             class_id=torch.from_numpy(classes.astype(np.int64))
         )
