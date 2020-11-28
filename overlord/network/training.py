@@ -558,7 +558,7 @@ class Model:
 					)
 
 	@torch.no_grad()
-	def translate(self, imgs, classes, n_translations_per_image, out_dir):
+	def translate(self, imgs, classes, n_translations_per_image, out_dir, save_dir=''):
 		data = dict(
 			img=torch.from_numpy(imgs).permute(0, 3, 1, 2),
 			img_id=torch.from_numpy(np.arange(imgs.shape[0])),
@@ -567,7 +567,11 @@ class Model:
 
 		self.amortized_model.to(self.device)
 		self.amortized_model.eval()
-
+		
+		if save_dir != '':
+			imgs = np.empty(shape=(2*imgs.shape[0], 128, 128, 3), dtype=np.uint8)
+			classes = np.empty(shape=(2*imgs.shape[0],), dtype=np.uint32)
+		
 		rs = np.random.RandomState(seed=1337)
 		dataset = NamedTensorDataset(data)
 
@@ -601,6 +605,13 @@ class Model:
 					translated_imgs[i],
 					os.path.join(out_dir, 'translation', '{}-{}.png'.format(content_idx, style_idxs[i]))
 				)
+				if save_dir != '':
+					imgs[2*content_idx] = data['class_id'][content_idx]
+					imgs[2*content_idx + 1] = translated_imgs[i] * 255
+					classes[2*content_idx] = data['img'][content_idx]
+					classes[2*content_idx + 1] = data['class_id'][content_idx]
+		if save_dir != '':
+			np.savez(file=save_dir, **{'img': imgs, 'class': classes})
 
 	@torch.no_grad()
 	def summary(self, imgs, classes, n_summaries, summary_size, out_dir):
