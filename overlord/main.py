@@ -193,12 +193,12 @@ def join_datasets(args):
 	model_dir = assets.get_model_dir(args.model_name)
 	eval_dir = assets.get_eval_dir(args.model_name)
 
-	data = np.load(assets.get_preprocess_file_path(args.data_name))
+	data = np.load(assets.get_preprocess_file_path(args.data_name1))
 	imgs = data['img'].astype(np.float32) / 255.0
 	classes = data['class']
 	
 	new_images = np.empty(shape=(2 * len(imgs), 128, 128, 3), dtype=np.uint8)
-	new_classes = np.empty(shape=(2 * len(imgs), 128, 128, 3), dtype=np.uint8)
+	classes = np.empty(shape=(2 * len(imgs),), dtype=np.uint32)
 	for directory in os.listdir(eval_dir):
 		if directory not in ['translation']:
 			continue
@@ -209,10 +209,10 @@ def join_datasets(args):
 			i = regex.match(file_name).groups()
 			i= int(i)
 			new_images[2*i] = img[i]
-			new_images[2*i+1] = imageio.imread(img_paths[i])
+			new_images[2*i+1] = imageio.imread(img_path)
 			new_classes[2*i] = classes[i]
 			new_classes[2*i+1] = classes[i]
-	np.savez(file=assets.get_preprocess_file_path(args.data_name), **{'img': new_images, 'class': new_classes})
+	np.savez(file=assets.get_preprocess_file_path(args.data_name2), **{'img': new_images, 'class': new_classes})
 	
 
 def main():
@@ -229,7 +229,7 @@ def main():
 	preprocess_parser.set_defaults(func=preprocess)
 	
 	preprocess_style_parser = action_parsers.add_parser('join-datasets')
-	preprocess_style_parser.add_argument('-dn1', '--data-name1', type=str, required=True)
+	preprocess_style_parser.add_argument('-dn1', '--data-name1', type=str, required=True); preprocess_style_parser.add_argument('-dn2', '--data-name2', type=str, required=True)
 	preprocess_style_parser.add_argument('-mn', '--model-name', type=str, required=True)
 	preprocess_style_parser.set_defaults(func=join_datasets)
 
