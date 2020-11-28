@@ -10,7 +10,7 @@ from network.training import Model
 from config import base_config
 from torch.utils.tensorboard import SummaryWriter
 from network.classifier import Classifier
-
+import re
 
 def classify(args):
 	assets = AssetManager(args.base_dir)
@@ -200,7 +200,7 @@ def join_datasets(args):
 	new_images = np.empty(shape=(2 * len(imgs), 128, 128, 3), dtype=np.uint8)
 	new_classes = np.empty(shape=(2 * len(imgs),), dtype=np.uint32)
 	for file_name in os.listdir(os.path.join(eval_dir, 'translations', 'translation')):
-		img_path = os.path.join(eval_dir, directory, file_name)
+		img_path = os.path.join(eval_dir, 'translations', 'translation', file_name)
 		if file_name.startswith('{-1}') or not file_name.endswith('.png'):
 			continue
 		i = regex.match(file_name).groups()
