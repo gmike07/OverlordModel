@@ -569,8 +569,8 @@ class Model:
 		self.amortized_model.eval()
 		
 		if save_dir != '':
-			imgs = np.empty(shape=(2*imgs.shape[0], 128, 128, 3), dtype=np.uint8)
-			classes = np.empty(shape=(2*imgs.shape[0],), dtype=np.uint32)
+			imgs_ = np.empty(shape=(2*imgs.shape[0], 128, 128, 3), dtype=np.uint8)
+			classes_ = np.empty(shape=(2*imgs.shape[0],), dtype=np.uint32)
 		
 		rs = np.random.RandomState(seed=1337)
 		dataset = NamedTensorDataset(data)
@@ -606,12 +606,12 @@ class Model:
 					os.path.join(out_dir, 'translation', '{}-{}.png'.format(content_idx, style_idxs[i]))
 				)
 				if save_dir != '':
-					imgs[2*content_idx] = data['class_id'][content_idx]
-					imgs[2*content_idx + 1] = translated_imgs[i] * 255
-					classes[2*content_idx] = data['img'][content_idx]
-					classes[2*content_idx + 1] = data['class_id'][content_idx]
+					imgs_[2*content_idx] = style_imgs[i].permute(1, 2, 0)
+					imgs_[2*content_idx + 1] = (translated_imgs[i] * 255).permute(1, 2, 0)
+					classes_[2*content_idx] = dataset[style_idxs]['class_id'][i]
+					classes_[2*content_idx + 1] = dataset[style_idxs]['class_id'][i]
 		if save_dir != '':
-			np.savez(file=save_dir, **{'img': imgs, 'class': classes})
+			np.savez(file=save_dir, **{'img': imgs_, 'class': classes_})
 
 	@torch.no_grad()
 	def summary(self, imgs, classes, n_summaries, summary_size, out_dir):
