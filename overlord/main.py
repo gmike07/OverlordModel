@@ -24,7 +24,7 @@ def classify(args):
 	classes = data['class']
 	unique_class_ids = list(set(classes))
 	for i in range(len(classes)):
-		classes[i] = unique_class_ids.index(class_ids[i])
+		classes[i] = unique_class_ids.index(classes[i])
 
 	model = Classifier(len(unique_class_ids))
 	model.train(model_dir, imgs, classes)
