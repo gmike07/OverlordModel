@@ -22,7 +22,7 @@ def classify(args):
 	data = np.load(assets.get_preprocess_file_path(args.data_name))
 	imgs = data['img'].astype(np.float32) / 255.0
 	classes = data['class']
-	unique_class_ids = list(set(class_ids))
+	unique_class_ids = list(set(classes))
 	for i in range(len(classes)):
 		classes[i] = unique_class_ids.index(class_ids[i])
 
