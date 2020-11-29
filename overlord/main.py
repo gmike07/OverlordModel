@@ -22,8 +22,11 @@ def classify(args):
 	data = np.load(assets.get_preprocess_file_path(args.data_name))
 	imgs = data['img'].astype(np.float32) / 255.0
 	classes = data['class']
+	unique_class_ids = np.unique(class_ids)
+	for i in range(len(classes)):
+		classes[i] = unique_class_ids.index(class_ids[i])
 
-	model = Classifier(len(np.unique(classes)))
+	model = Classifier(len(unique_class_ids))
 	model.train(model_dir, imgs, classes)
 
 def preprocess(args, extras=[]):
