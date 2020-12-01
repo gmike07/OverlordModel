@@ -236,7 +236,37 @@ def join_datasets(args):
 		new_classes[2*i+1] = classes[i]
 	np.savez(file=assets.get_preprocess_file_path(args.data_name2), **{'img': new_images, 'class': new_classes})
 	
+def eval_classifier(args):
+	assets = AssetManager(args.base_dir)
+	model_dir = assets.get_model_dir(args.model_name)
 
+	data = np.load(assets.get_preprocess_file_path(args.data_name))
+	imgs = data['img'].astype(np.float32) / 255.0
+	classes = data['class']
+	unique_class_ids = list(set(classes))
+	for i in range(len(classes)):
+		classes[i] = unique_class_ids.index(classes[i])
+
+	model = Classifier(len(unique_class_ids))
+	model.load(model_dir)
+	loss1, acc, n = 0, 0, 0
+	
+	mapped_data = dict(
+            img=torch.from_numpy(imgs).permute(0, 3, 1, 2),
+            img_id=torch.from_numpy(np.arange(imgs.shape[0])),
+            class_id=torch.from_numpy(classes.astype(np.int64))
+        )        
+	id_criterion = nn.CrossEntropyLoss()
+	mapping = {}
+	for i in range(len(imgs)):
+		class = mapped_data['class_id'][i]
+		img = mapped_data['img'][i]
+		if class not in mapping:
+			mapping[class] = []
+		mapping[class].append(model.model(img))
+	print(sum(np.std(mapping[class]) for class in mapping) / len(mapping))
+		
+	
 def main():
 	parser = argparse.ArgumentParser()
 	parser.add_argument('-bd', '--base-dir', type=str, required=True)
@@ -275,6 +305,11 @@ def main():
 	amortize_parser.add_argument('-dn', '--data-name', type=str, required=True)
 	amortize_parser.add_argument('-mn', '--model-name', type=str, required=True)
 	amortize_parser.set_defaults(func=amortize)
+	
+	amortize_parser1 = action_parsers.add_parser('eval-classifier')
+	amortize_parser1.add_argument('-dn', '--data-name', type=str, required=True)
+	amortize_parser1.add_argument('-mn', '--model-name', type=str, required=True)
+	amortize_parser1.set_defaults(func=eval_classifier)
 	
 	amortize_parser = action_parsers.add_parser('test')
 	amortize_parser.add_argument('-dn', '--data-name', type=str, required=True)
