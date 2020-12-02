@@ -16,13 +16,8 @@ from network.utils import NamedTensorDataset, AugmentedDataset
 class Classifier:
     def __init__(self, num_classes):
         self.model = torchvision.models.resnet50(pretrained=True)
-        for param in self.model.parameters():
-            param.requires_grad = False
         num_ftrs = self.model.fc.in_features
-        self.model.fc = nn.Sequential(
-          nn.Linear(num_ftrs, 2048), nn.Dropout(0.5),
-          nn.Linear(2048, num_classes)
-        )
+        self.model.fc = nn.Sequential(nn.Linear(num_ftrs, num_classes))
         print(num_ftrs)
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.model = self.model.to(self.device)
