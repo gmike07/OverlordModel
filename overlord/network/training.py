@@ -591,6 +591,8 @@ class Model:
 			style_codes = self.amortized_model.style_encoder(style_imgs.to(self.device))
 
 			translated_imgs = self.amortized_model.generator(content_codes, class_codes, style_codes).cpu()
+			path = os.path.join('..', 'market1501', 'Market-1501-v15.09.15', 'bounding_box_train')
+			files = np.array(os.listdir(path))
 			for i in range(n_translations_per_image):
 				torchvision.utils.save_image(
 					content_imgs[i],
@@ -604,6 +606,15 @@ class Model:
 				torchvision.utils.save_image(
 					translated_imgs[i],
 					os.path.join(out_dir, 'translation', '{}-{}.png'.format(content_idx, style_idxs[i]))
+				)
+				content_name = files[content_idx]
+				content_name = content_name[content_name.find('_'):]
+				class_name = files[style_idxs[i]]
+				class_name = class_name[:class_name.find('_')]
+				
+				torchvision.utils.save_image(
+					cv2.resize(translated_imgs[i].cpu().reshape((128, 128, 3)), (64, 128)),
+					os.path.join(path, '{}{}.png'.format(class_name, content_name))
 				)
 				if save_dir != '':
 					imgs_[2*content_idx] = style_imgs[i].permute(1, 2, 0)
