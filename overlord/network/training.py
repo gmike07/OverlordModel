@@ -582,7 +582,7 @@ class Model:
 		all_idx = np.arange(data['img'].shape[0])
 		f = lambda x: torch.from_array(cv2.resize(x.cpu().reshape((128, 128, 3)), (64, 128)).reshape((3, 128, 64)))
 		path = os.path.join('..', 'market1501', 'Market-1501-v15.09.15', 'bounding_box_train')
-			files = np.array(os.listdir(path))
+		files = np.array(os.listdir(path))
 		for content_idx in tqdm(all_idx):
 			style_idxs = rs.choice(np.delete(all_idx, content_idx), size=n_translations_per_image, replace=False)
 
