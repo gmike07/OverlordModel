@@ -259,12 +259,12 @@ def eval_classifier(args):
 	id_criterion = nn.CrossEntropyLoss()
 	mapping = {}
 	for i in range(len(imgs)):
-		class = mapped_data['class_id'][i]
+		class_ = mapped_data['class_id'][i]
 		img = mapped_data['img'][i]
-		if class not in mapping:
-			mapping[class] = []
-		mapping[class].append(model.model(img))
-	print(sum(np.std(mapping[class]) for class in mapping) / len(mapping))
+		if class_ not in mapping:
+			mapping[class_] = []
+		mapping[class_].append(model.model(img))
+	print(sum(np.std(mapping[class_]) for class_ in mapping) / len(mapping))
 		
 	
 def main():
