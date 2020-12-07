@@ -608,7 +608,7 @@ class Model:
 				class_name = files[style_idxs[i]]
 				class_name = class_name[:class_name.find('_')]
 				
-				im = translated_imgs[i].cpu().reshape((128, 128, 3))
+				im = translated_imgs[i].cpu().reshape((128, 128, 3)).numpy()
 				print(im.shape)
 				im = cv2.resize(im, (64, 128))
 				print(im.shape)
