@@ -580,7 +580,6 @@ class Model:
 		os.mkdir(os.path.join(out_dir, 'translation'))
 
 		all_idx = np.arange(data['img'].shape[0])
-		f = lambda x: torch.from_array(cv2.resize(x.cpu().reshape((128, 128, 3)), (64, 128)).reshape((3, 128, 64)))
 		path = os.path.join('..', 'market1501', 'Market-1501-v15.09.15', 'bounding_box_train')
 		files = np.array(os.listdir(path))
 		for content_idx in tqdm(all_idx):
@@ -609,13 +608,20 @@ class Model:
 				class_name = files[style_idxs[i]]
 				class_name = class_name[:class_name.find('_')]
 				
+				im = translated_imgs[i].cpu().reshape((128, 128, 3))
+				print(im.shape)
+				im = cv2.resize(im, (64, 128))
+				print(im.shape)
+				im = im.reshape((3, 128, 64))
+				im = torch.from_numpy(im)
+				print(im.shape)
 				torchvision.utils.save_image(
 					translated_imgs[i],
 					os.path.join(out_dir, 'translation', '{}{}.png'.format(class_name, content_name))
 				)
 				
 				torchvision.utils.save_image(
-					f(translated_imgs[i]),
+					im,
 					os.path.join(path, '{}{}.png'.format(class_name, content_name))
 				)
 				if save_dir != '':
