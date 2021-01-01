@@ -1,16 +1,16 @@
 base_config = dict(
 	content_dim=64,
 	class_dim=512,
-	style_dim=1,
+	style_dim=4,
 
-	content_std=0,
+	content_std=1,
 
 	perceptual_loss=dict(
 		layers=[2, 7, 12, 21, 30]
 	),
 
 	train=dict(
-		batch_size=16,
+		batch_size=8,
 		n_epochs=200,
 
 		learning_rate=dict(
