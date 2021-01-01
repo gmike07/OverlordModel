@@ -224,7 +224,7 @@ class Model:
 	def amortize(self, imgs, classes, model_dir, tensorboard_dir):
 		self.amortized_model = AmortizedModel(self.config)
 		if not (os.path.exists(model_dir) and os.path.exists(os.path.join(model_dir, 'objs2.pkl'))):
-			self.warmup(imgs, classes, model_dir, tensorboard_dir)
+			# self.warmup(imgs, classes, model_dir, tensorboard_dir)
 			epochs = self.config['amortize']['n_epochs']
 
 		data = dict(
@@ -241,8 +241,6 @@ class Model:
 
 		generator_optimizer = Adam(
 			params=itertools.chain(
-				self.amortized_model.content_encoder.parameters(),
-				self.amortized_model.class_encoder.parameters(),
 				self.amortized_model.generator.parameters()
 			),
 
@@ -280,7 +278,6 @@ class Model:
 				loss_discriminator = (
 					losses_discriminator['fake']
 					+ losses_discriminator['real']
-					+ losses_discriminator['gradient_penalty']
 				)
 
 				generator_optimizer.zero_grad()
@@ -437,8 +434,8 @@ class Model:
 		}
 
 	def train_amortized_generator(self, batch):
-		content_code = self.amortized_model.content_encoder(batch['img'])
-		class_code = self.amortized_model.class_encoder(batch['img'])
+		content_code = batch['content_code']
+		class_code = batch['class_code']
 
 		with torch.no_grad():
 			style_code = self.amortized_model.style_encoder(batch['img'])
@@ -446,8 +443,8 @@ class Model:
 		img_reconstructed = self.amortized_model.generator(content_code, class_code, style_code)
 		loss_reconstruction = self.perceptual_loss(img_reconstructed, batch['img'])
 
-		loss_content = torch.mean((content_code - batch['content_code']) ** 2, dim=1).mean()
-		loss_class = torch.mean((class_code - batch['class_code']) ** 2, dim=1).mean()
+		loss_content = 0
+		loss_class = 0
 
 		discriminator_fake = self.amortized_model.discriminator(img_reconstructed)
 		loss_adversarial = self.adv_loss(discriminator_fake, 1)
@@ -460,8 +457,8 @@ class Model:
 
 	def train_discriminator(self, batch):
 		with torch.no_grad():
-			content_code = self.amortized_model.content_encoder(batch['img'])
-			class_code = self.amortized_model.class_encoder(batch['img'])
+			content_code = batch['content_code']
+			class_code = batch['class_code']
 			style_code = self.amortized_model.style_encoder(batch['img'])
 			img_reconstructed = self.amortized_model.generator(content_code, class_code, style_code)
 
