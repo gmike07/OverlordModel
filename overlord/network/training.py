@@ -689,7 +689,7 @@ class Model:
 			samples['style_code'] = self.latent_model.style_encoder(samples['img'].to(self.device))
 
 		samples = {name: tensor.to(self.device) for name, tensor in samples.items()}
-		f = lambda x: torch.from_numpy(cv2.resize(x.cpu().reshape((128, 128, 3)), (64, 128)).reshape((3, 128, 64)))
+		f = lambda x: torch.from_numpy(cv2.resize(x.cpu().numpy().reshape((128, 128, 3)), (64, 128)).reshape((3, 128, 64)))
 		blank = torch.ones_like(f(samples['img'][0]))
 		summary = [torch.cat([blank] + list(f(img) for img in samples['img']), dim=2)]
 		for i in range(n_samples):
