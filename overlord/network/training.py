@@ -264,9 +264,9 @@ class Model:
 			epochs = objs['epochs']
 			generator_optimizer.load_state_dict(objs['generator_optimizer'])
 			discriminator_optimizer.load_state_dict(objs['discriminator_optimizer'])
-			self.latent_model.load_state_dict(torch.load(os.path.join(model_dir, 'amortized.pth')))
+			self.amortized_model.load_state_dict(torch.load(os.path.join(model_dir, 'amortized.pth')))
 		
-		summary = SummaryWriter(log_dir=tensorboard_dir)
+		summary = SummaryWriter(log_dir=tensorboard_dir); print(epochs)
 		for epoch in range(epochs):
 			self.amortized_model.train()
 
@@ -321,7 +321,7 @@ class Model:
 				summary.add_scalar(tag='class_from_content/train', scalar_value=score_train, global_step=epoch)
 				summary.add_scalar(tag='class_from_content/test', scalar_value=score_test, global_step=epoch)
 				
-			if epoch % 4 == 0:
+			if True:
 				if os.path.exists(model_dir):
 					objs = {'epochs': epochs - epoch,
 						'generator_optimizer': generator_optimizer.state_dict(),
